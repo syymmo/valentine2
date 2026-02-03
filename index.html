@@ -1,0 +1,658 @@
+<!doctype html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Ще бъдеш ли моята Валентинка?</title>
+    <style>
+        :root{
+            --bg1:#ff5c8a;
+            --bg2:#ffd29d;
+            --card:#ffffffd9;
+            --stroke:#ffffff85;
+            --text:#1f1f1f;
+            --muted:#00000085;
+            --accent:#ff2e6e;
+            --accent2:#ff7aa2;
+            --shadow: 0 24px 70px rgba(0,0,0,.18);
+            --radius: 26px;
+        }
+        *{ box-sizing:border-box; }
+        html,body{ height:100%; }
+        body{
+            margin:0;
+            font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+            color:var(--text);
+            overflow:hidden;
+            display:grid;
+            place-items:center;
+            background:
+                    radial-gradient(1200px 600px at 20% 10%, rgba(255,255,255,.35), transparent 50%),
+                    radial-gradient(900px 500px at 80% 20%, rgba(255,255,255,.28), transparent 55%),
+                    radial-gradient(800px 600px at 50% 90%, rgba(255,255,255,.18), transparent 60%),
+                    linear-gradient(135deg, var(--bg1), var(--bg2));
+        }
+
+        /* soft blobs */
+        .blob{
+            position:fixed;
+            width:420px; height:420px; border-radius:50%;
+            filter: blur(40px);
+            opacity:.28;
+            z-index:0;
+            animation: drift 10s ease-in-out infinite alternate;
+            pointer-events:none;
+        }
+        .blob.one{ background:#fff; left:-140px; top:-140px; }
+        .blob.two{ background:#ff2e6e; right:-180px; top:60px; animation-duration:12s; opacity:.20; }
+        .blob.three{ background:#ffb703; left:40px; bottom:-220px; animation-duration:14s; opacity:.18; }
+        @keyframes drift{ from{transform:translate(0,0) scale(1);} to{transform:translate(40px,26px) scale(1.04);} }
+
+        /* Floating background layer */
+        .bg-float-layer{
+            position:fixed;
+            inset:0;
+            z-index:0;
+            pointer-events:none;
+            overflow:hidden;
+        }
+        .bg-float{
+            position:absolute;
+            left: var(--x);
+            top: 110%;
+            font-size: var(--size);
+            opacity: var(--opacity);
+            transform: translateZ(0);
+            animation: bgFloatUp var(--dur) linear infinite;
+            animation-delay: var(--delay);
+            will-change: transform;
+
+            text-shadow:
+                    0 0 10px rgba(255,255,255,.75),
+                    0 6px 18px rgba(0,0,0,.18);
+            filter: saturate(1.15) contrast(1.05);
+        }
+        @keyframes bgFloatUp{
+            from { transform: translateY(0) translateX(0) rotate(0deg); }
+            to   { transform: translateY(-240vh) translateX(var(--drift)) rotate(var(--rot)); }
+        }
+
+        .wrap{ position:relative; z-index:1; width:min(680px, 92vw); padding:18px; }
+        .card{
+            position:relative;
+            border-radius:26px;
+            background:var(--card);
+            border:1px solid var(--stroke);
+            box-shadow:var(--shadow);
+            padding:24px 22px 18px;
+            backdrop-filter: blur(10px);
+            overflow:hidden;
+        }
+        .sparkle{
+            position:absolute; inset:-2px;
+            border-radius: 28px;
+            background:
+                    radial-gradient(12px 12px at 20% 10%, rgba(255,255,255,.75), transparent 60%),
+                    radial-gradient(10px 10px at 80% 18%, rgba(255,255,255,.55), transparent 60%),
+                    radial-gradient(12px 12px at 10% 70%, rgba(255,255,255,.55), transparent 60%),
+                    radial-gradient(10px 10px at 90% 78%, rgba(255,255,255,.55), transparent 60%);
+            pointer-events:none;
+            opacity:.55;
+            mix-blend-mode: screen;
+        }
+
+        .top{
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+            gap:12px;
+            flex-wrap:wrap;
+            margin-bottom:10px;
+        }
+
+        .badge{
+            display:inline-flex;
+            align-items:center;
+            gap:8px;
+            padding:8px 12px;
+            border-radius:999px;
+            background:#fff;
+            border:1px solid #00000010;
+            box-shadow:0 10px 26px rgba(0,0,0,.06);
+            font-weight:900;
+            font-size:13px;
+        }
+        .badge .dot{
+            width:10px; height:10px; border-radius:50%;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            box-shadow: 0 0 0 4px rgba(255,46,110,.12);
+        }
+
+        .counter{
+            display:flex;
+            align-items:center;
+            gap:10px;
+            padding:8px 12px;
+            border-radius:999px;
+            background:#ffffffc0;
+            border:1px solid #00000010;
+            box-shadow:0 10px 26px rgba(0,0,0,.06);
+            font-weight:900;
+            font-size:13px;
+        }
+        .counter[hidden]{ display:none !important; }
+
+        .pill{
+            display:inline-flex;
+            align-items:center;
+            justify-content:center;
+            min-width:34px;
+            height:26px;
+            padding:0 10px;
+            border-radius:999px;
+            background: rgba(255,46,110,.12);
+            border:1px solid rgba(255,46,110,.22);
+            color:#7a0f2f;
+            font-weight:900;
+        }
+
+        h1{
+            margin: 6px 0 14px;
+            font-size: clamp(24px, 4.2vw, 40px);
+            line-height:1.08;
+            text-align:center;
+            letter-spacing:-0.02em;
+        }
+
+        .buttons{
+            display:flex;
+            justify-content:center;
+            gap:12px;
+            flex-wrap:wrap;
+            min-height:60px;
+            margin-top: 6px;
+        }
+        button{
+            border:0;
+            cursor:pointer;
+            padding:12px 18px;
+            border-radius:16px;
+            font-weight:900;
+            font-size:16px;
+            transition: transform .12s ease, filter .12s ease, box-shadow .12s ease;
+            user-select:none;
+            -webkit-tap-highlight-color: transparent;
+            transform-origin: center;
+        }
+        button:active{ transform: translateY(1px) scale(.99); }
+
+        #yesBtn{
+            color:#fff;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            box-shadow: 0 14px 30px rgba(255,46,110,.32);
+        }
+
+        #noBtn{
+            color: var(--accent);
+            background:#fff;
+            border: 2px solid rgba(255,46,110,.22);
+            box-shadow: 0 12px 24px rgba(0,0,0,.07);
+        }
+
+        .toast{
+            margin-top:14px;
+            padding:12px 14px;
+            border-radius:18px;
+            background:#fff;
+            border:1px solid #00000010;
+            box-shadow:0 12px 26px rgba(0,0,0,.06);
+            text-align:center;
+            display:none;
+            line-height:1.45;
+        }
+
+        .ps{
+            margin-top:12px;
+            text-align:center;
+            font-size:13px;
+            color:#00000080;
+            line-height:1.35;
+        }
+
+        /* emoji burst (YES / auto-YES) */
+        .heart{
+            position:fixed;
+            bottom:-10vh;
+            pointer-events:none;
+            filter: drop-shadow(0 8px 14px rgba(0,0,0,.18));
+            animation: floatUp linear forwards;
+            z-index:2;
+        }
+        @keyframes floatUp{
+            from { transform: translateY(0) scale(1); opacity:.95; }
+            to   { transform: translateY(-130vh) scale(1.7); opacity:0; }
+        }
+
+        .wiggle{ animation: wiggle .35s ease; }
+        @keyframes wiggle{
+            0%{ transform: rotate(0deg); }
+            25%{ transform: rotate(-2.2deg); }
+            50%{ transform: rotate(2.2deg); }
+            75%{ transform: rotate(-1.3deg); }
+            100%{ transform: rotate(0deg); }
+        }
+
+        /* LOCK overlay */
+        .lock-overlay{
+            position:fixed;
+            inset:0;
+            z-index:999;
+            display:none; /* toggled by JS */
+            align-items:center;
+            justify-content:center;
+            padding:18px;
+            background: rgba(0,0,0,.16);
+            backdrop-filter: blur(8px);
+        }
+        .lock-card{
+            width:min(640px, 92vw);
+            border-radius: 26px;
+            background: #ffffffdd;
+            border: 1px solid rgba(255,255,255,.55);
+            box-shadow: 0 24px 70px rgba(0,0,0,.22);
+            padding: 22px 18px;
+            text-align:center;
+        }
+        .lock-title{
+            font-weight: 900;
+            font-size: 20px;
+            margin: 0 0 10px;
+            letter-spacing: -0.01em;
+        }
+        .lock-sub{
+            margin: 0 0 14px;
+            color: rgba(0,0,0,.70);
+            line-height: 1.45;
+            font-size: 14px;
+        }
+        .lock-note{
+            margin-top: 14px;
+            font-size: 12px;
+            color: rgba(0,0,0,.60);
+        }
+    </style>
+</head>
+
+<body>
+<div class="blob one"></div>
+<div class="blob two"></div>
+<div class="blob three"></div>
+
+<div class="bg-float-layer" id="bgFloatLayer" aria-hidden="true"></div>
+
+<!-- LOCK overlay -->
+<div class="lock-overlay" id="lockOverlay" aria-hidden="true">
+    <div class="lock-card">
+        <div class="lock-title">Досието “Валентинка” 🕵️‍♀️</div>
+        <p class="lock-sub">
+            Сейфът иска <strong>4-цифрен код</strong>.<br>
+            Имаш <strong>3 опита на ден</strong>.<br><br>
+            <strong>Правила:</strong> кодът е 4 цифри (0–9), без повтарящи се цифри.<br>
+            Всеки ред показва опит и какво е казала системата.
+        </p>
+
+        <div style="text-align:left; background:#ffffffc0; border:1px solid rgba(0,0,0,.08); border-radius:18px; padding:12px 14px; box-shadow:0 10px 20px rgba(0,0,0,.06);">
+            <div style="font-weight:900; margin-bottom:8px;">Лог от охраната:</div>
+            <div>1) <strong>2148</strong> → 0 верни цифри</div>
+            <div>2) <strong>2459</strong> → 2 верни на място, другите 2 не участват</div>
+            <div>3) <strong>0517</strong> → 2 верни, но и двете са на грешно място</div>
+            <div>4) <strong>5013</strong> → 1 вярна, но на грешно място</div>
+            <div>5) <strong>1702</strong> → 1 вярна, но на грешно място</div>
+            <div>6) <strong>6831</strong> → 1 вярна, но на грешно място</div>
+        </div>
+
+        <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:12px;">
+            <input id="answerInput"
+                   inputmode="numeric"
+                   maxlength="4"
+                   placeholder="Въведи 4-цифрен код..."
+                   style="padding:12px 14px; border-radius:16px; border:1px solid rgba(0,0,0,.12); min-width:240px; font-weight:800; outline:none;"
+                   autocomplete="off" />
+            <button id="answerBtn"
+                    style="padding:12px 16px; border-radius:16px; border:0; font-weight:900; cursor:pointer; background: linear-gradient(135deg, #ff2e6e, #ff7aa2); color:#fff; box-shadow: 0 14px 30px rgba(255,46,110,.25);">
+                Провери
+            </button>
+        </div>
+
+        <div id="answerMsg" class="lock-note" style="min-height:18px;"></div>
+        <div id="attemptsInfo" class="lock-note" style="margin-top:6px;"></div>
+        <div class="lock-note">Подсказка: започни от ред 1 (елиминира цифри).</div>
+    </div>
+</div>
+
+<div class="wrap">
+    <div class="card" id="card">
+        <div class="sparkle"></div>
+
+        <div class="top">
+            <div class="badge"><span class="dot"></span> Валентинско запитване</div>
+            <div class="counter" id="counter" hidden>
+                Опити за „Не“: <span class="pill" id="noCount">0</span>
+            </div>
+        </div>
+
+        <h1 id="title"></h1>
+
+        <div class="buttons">
+            <button id="yesBtn">Да ❤️</button>
+            <button id="noBtn">Не 🙈</button>
+        </div>
+
+        <div class="toast" id="toast"></div>
+
+        <div class="ps">
+            <div><strong>P.S.</strong> Избери внимателно… системата следи. 👀</div>
+            <div>Всяко „Не“ се записва за контрол на качеството. 📝</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ==============================
+    // CONFIG (edit here)
+    // ==============================
+    const HER_NAME = "Мария";
+    const FROM_NAME = "Симеон";
+    const AUTO_YES_AFTER = 5;
+
+
+    // DEV toggle:
+    // true  -> lock is disabled (always unlocked) for testing
+    // false -> lock requires solving the detective safe
+    const DEV_UNLOCK = false;
+
+    // The actual 4-digit code (set your final code here)
+    // NOTE: the clue log above is written to match this code.
+    const SAFE_CODE = "3596";
+
+    // Background float config
+    const BG_FLOAT_SYMBOLS = ["🍑","💗","💖","💞","💕","💘","✨","🌸","🌹","🍓","🎀","🦋","💫"];
+    const BG_FLOAT_COUNT = 22;
+    const BG_FLOAT_SPEED_MIN_S = 55;
+    const BG_FLOAT_SPEED_MAX_S = 85;
+    const BG_FLOAT_SIZE_MIN_PX = 22;
+    const BG_FLOAT_SIZE_MAX_PX = 34;
+    const BG_FLOAT_OPACITY_MIN = 0.28;
+    const BG_FLOAT_OPACITY_MAX = 0.48;
+    const BG_FLOAT_DRIFT_MIN_PX = -70;
+    const BG_FLOAT_DRIFT_MAX_PX = 70;
+    const BG_FLOAT_ROT_MIN_DEG = -22;
+    const BG_FLOAT_ROT_MAX_DEG = 22;
+    // ==============================
+
+    // ----- helpers -----
+    function rand(min, max){ return Math.random() * (max - min) + min; }
+    function randInt(min, max){ return Math.floor(rand(min, max + 1)); }
+    function pick(arr){ return arr[randInt(0, arr.length - 1)]; }
+
+    // Title
+    document.getElementById("title").textContent = `${HER_NAME}, ще бъдеш ли моята Валентинка? 💘`;
+
+    // Create floating background items
+    (function initBackgroundFloats(){
+        const layer = document.getElementById("bgFloatLayer");
+        for (let i = 0; i < BG_FLOAT_COUNT; i++){
+            const el = document.createElement("div");
+            el.className = "bg-float";
+            el.textContent = pick(BG_FLOAT_SYMBOLS);
+
+            el.style.setProperty("--x", rand(3, 97).toFixed(2) + "vw");
+            el.style.setProperty("--size", randInt(BG_FLOAT_SIZE_MIN_PX, BG_FLOAT_SIZE_MAX_PX) + "px");
+            el.style.setProperty("--opacity", rand(BG_FLOAT_OPACITY_MIN, BG_FLOAT_OPACITY_MAX).toFixed(2));
+            el.style.setProperty("--dur", randInt(BG_FLOAT_SPEED_MIN_S, BG_FLOAT_SPEED_MAX_S) + "s");
+            el.style.setProperty("--delay", "-" + randInt(0, BG_FLOAT_SPEED_MAX_S) + "s");
+            el.style.setProperty("--drift", randInt(BG_FLOAT_DRIFT_MIN_PX, BG_FLOAT_DRIFT_MAX_PX) + "px");
+            el.style.setProperty("--rot", randInt(BG_FLOAT_ROT_MIN_DEG, BG_FLOAT_ROT_MAX_DEG) + "deg");
+
+            layer.appendChild(el);
+        }
+    })();
+
+    // ----- Lock gate (Detective safe + 3 attempts/day) -----
+    const lockOverlay = document.getElementById("lockOverlay");
+    const answerInput = document.getElementById("answerInput");
+    const answerBtn = document.getElementById("answerBtn");
+    const answerMsg = document.getElementById("answerMsg");
+    const attemptsInfo = document.getElementById("attemptsInfo");
+
+    const MAX_ATTEMPTS_PER_DAY = 3;
+
+    function todayKey() {
+        const d = new Date();
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        return `${y}-${m}-${day}`;
+    }
+    function attemptsStorageKey() {
+        return `valentine_attempts_${todayKey()}`;
+    }
+    function getFailedAttemptsToday() {
+        const v = localStorage.getItem(attemptsStorageKey());
+        return v ? parseInt(v, 10) : 0;
+    }
+    function setFailedAttemptsToday(n) {
+        localStorage.setItem(attemptsStorageKey(), String(n));
+    }
+    function attemptsLeft() {
+        return Math.max(0, MAX_ATTEMPTS_PER_DAY - getFailedAttemptsToday());
+    }
+
+    function lockOutUI(){
+        answerInput.disabled = true;
+        answerBtn.disabled = true;
+        answerInput.style.opacity = "0.7";
+        answerBtn.style.opacity = "0.65";
+        answerBtn.style.cursor = "not-allowed";
+    }
+
+    function renderAttempts(){
+        if (DEV_UNLOCK) {
+            attemptsInfo.textContent = "DEV режим: отключено (опитите не се броят).";
+            return;
+        }
+        const left = attemptsLeft();
+        if (left > 0) {
+            attemptsInfo.textContent = `Опити за днес: ${left}/${MAX_ATTEMPTS_PER_DAY}`;
+        } else {
+            attemptsInfo.textContent = "Опитите за днес свършиха. Пробвай утре 🙂";
+            lockOutUI();
+        }
+    }
+
+    function normalizeCode(s){
+        return (s || "").trim().replace(/\s+/g, "");
+    }
+
+    let unlocked = false;
+
+    function unlockGame(){
+        unlocked = true;
+        lockOverlay.style.display = "none";
+        lockOverlay.setAttribute("aria-hidden", "true");
+    }
+
+    function tryUnlock(){
+        if (DEV_UNLOCK) { unlockGame(); return; }
+
+        const left = attemptsLeft();
+        if (left <= 0) {
+            answerMsg.textContent = "Няма повече опити за днес 🙂";
+            lockOutUI();
+            return;
+        }
+
+        const guess = normalizeCode(answerInput.value);
+
+        if (!/^\d{4}$/.test(guess)) {
+            answerMsg.textContent = "Моля въведи точно 4 цифри.";
+            answerInput.focus();
+            return;
+        }
+
+        // enforce no repeated digits
+        const set = new Set(guess.split(""));
+        if (set.size !== 4) {
+            answerMsg.textContent = "Без повтарящи се цифри 😉";
+            answerInput.focus();
+            return;
+        }
+
+        if (guess === SAFE_CODE) {
+            answerMsg.textContent = "Браво, детективе! Отключено 💘";
+            setTimeout(unlockGame, 350);
+            return;
+        }
+
+        // wrong attempt -> count it
+        setFailedAttemptsToday(getFailedAttemptsToday() + 1);
+        const nowLeft = attemptsLeft();
+        answerMsg.textContent = nowLeft > 0
+            ? `Грешен код. Остават ти ${nowLeft} опита за днес.`
+            : "Грешен код. Опитите за днес свършиха. Пробвай утре 🙂";
+        renderAttempts();
+
+        answerInput.focus();
+        answerInput.select();
+    }
+
+    // init lock state
+    if (DEV_UNLOCK) {
+        unlocked = true;
+        lockOverlay.style.display = "none";
+        lockOverlay.setAttribute("aria-hidden", "true");
+    } else {
+        lockOverlay.style.display = "flex";
+        lockOverlay.setAttribute("aria-hidden", "false");
+        unlocked = false;
+
+        renderAttempts();
+        answerBtn.addEventListener("click", tryUnlock);
+        answerInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter") tryUnlock();
+        });
+        setTimeout(() => answerInput.focus(), 150);
+    }
+
+    // Main UI logic
+    const yesBtn = document.getElementById("yesBtn");
+    const noBtn  = document.getElementById("noBtn");
+    const toast  = document.getElementById("toast");
+    const card   = document.getElementById("card");
+    const counter = document.getElementById("counter");
+    const noCountEl = document.getElementById("noCount");
+
+    let noCount = 0;
+    let accepted = false;
+
+    const YES_GROWTH_PER_NO = 0.08;
+    const NO_SHRINK_PER_NO  = 0.07;
+    const MIN_NO_SCALE = 0.55;
+
+    function spawnEmojis(count = 70){
+        const symbols = ["💖","💘","💝","💗","💞","💕","❤️","🌹","✨"];
+        for(let i=0;i<count;i++){
+            const el = document.createElement("div");
+            el.className = "heart";
+            el.textContent = symbols[Math.floor(Math.random()*symbols.length)];
+            el.style.left = (Math.random()*100) + "vw";
+            el.style.animationDuration = (2.0 + Math.random()*2.6) + "s";
+            el.style.fontSize = (14 + Math.random()*26) + "px";
+            el.style.opacity = (0.65 + Math.random()*0.35).toFixed(2);
+            document.body.appendChild(el);
+            setTimeout(()=> el.remove(), 5600);
+        }
+    }
+
+    function wiggleCard(){
+        card.classList.remove("wiggle");
+        void card.offsetWidth;
+        card.classList.add("wiggle");
+    }
+
+    function showToast(html){
+        toast.innerHTML = html;
+        toast.style.display = "block";
+        wiggleCard();
+    }
+
+    function messageForNo(n){
+        if (n === 1) return "Записах „Не“. Сигурна ли си? 🤨";
+        if (n === 2) return "Второ „Не“. Съветът не е съгласен. 🧑‍⚖️";
+        if (n === 3) return "Окей… но „Да“ изглежда по-добре. 😌";
+        if (n === 4) return "Това вече изглежда като тест.";
+        if (n === 5) return "Системата е на път да вземе решение. ⏳";
+        return "Опит №" + n + " е записан.";
+    }
+
+    function setButtonScales(){
+        const yesScale = 1 + (noCount * YES_GROWTH_PER_NO);
+        const noScale  = Math.max(MIN_NO_SCALE, 1 - (noCount * NO_SHRINK_PER_NO));
+        yesBtn.style.transform = `scale(${yesScale})`;
+        noBtn.style.transform  = `scale(${noScale})`;
+    }
+
+    function acceptYes(auto = false){
+        accepted = true;
+        spawnEmojis(80);
+
+        const line = `Аз знам къде и кога — ти само се облечи и тръгваме 😉`;
+
+        if (auto) {
+            showToast(`<strong>Системата реши: ДА</strong><br><br><strong>Ухуу!</strong><br><br>${line}`);
+        } else {
+            showToast(`<strong>Ухуу!</strong><br><br>${line}`);
+        }
+
+        noBtn.disabled = true;
+        noBtn.style.opacity = 0.55;
+        noBtn.style.cursor = "not-allowed";
+    }
+
+    function guard(){
+        if (DEV_UNLOCK) return true;
+        return unlocked;
+    }
+
+    yesBtn.addEventListener("click", () => {
+        if (!guard()) return;
+        spawnEmojis(70);
+
+        if (!accepted) {
+            acceptYes(false);
+            return;
+        }
+        showToast(`<strong>Ухуу!</strong>`);
+    });
+
+    noBtn.addEventListener("click", () => {
+        if (!guard()) return;
+        if (accepted) return;
+
+        if (noCount === 0) counter.hidden = false;
+
+        noCount++;
+        noCountEl.textContent = String(noCount);
+
+        showToast(messageForNo(noCount));
+        setButtonScales();
+
+        if (noCount >= AUTO_YES_AFTER) {
+            setTimeout(() => {
+                if (!accepted) acceptYes(true);
+            }, 700);
+        }
+    });
+</script>
+</body>
+</html>
